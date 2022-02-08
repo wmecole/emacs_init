@@ -1,4 +1,4 @@
-﻿;;; package --- emacs init file
+;;; package --- emacs init file
 ;;; Commentary:
 ;;; 
 ;;; Contents are almost entirely inspired by other people to the point
@@ -21,13 +21,9 @@
 
 ;; Initialize Package
 (require 'package)
-
-(setq package-enable-at-startup nil)
-(unless (assoc-default "org" package-archives)
-  (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t))
-(unless (assoc-default "melpa" package-archives)
-  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t))
-
+(setq package-archives '(("org" . "https://orgmode.org/elpa/")
+                         ("gnu" . "https://elpa.gnu.org/packages/")
+                         ("melpa" . "https://melpa.org/packages/")))
 (package-initialize )
 
 ;; Install 'use-package' if it is not installed.
@@ -203,7 +199,11 @@
   :config
   (evil-collection-init))
 
-;; Spell checking with Flyspell
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Spell checking       ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Flyspell Mode
 ;; Requires Hunspell
 (setq ispell-program-name "hunspell")
 
@@ -213,12 +213,24 @@
         ispell-default-dictionary "en_US")
   :hook (text-mode . flyspell-mode))
 
+;;Enable  Flyspell in all modes
+(add-hook 'text-mode-hook 'flyspell-mode)
+(add-hook 'prog-mode-hook 'flyspell-prog-mode)
+
 (use-package flyspell-correct
   :after flyspell
   :bind (:map flyspell-mode-map ("C-;" . flyspell-correct-wrapper)))
 
+(eval-after-load "flyspell"
+  '(define-key flyspell-mode-map (kbd "C-;") 'flyspell-correct-wrapper))
+
 (use-package flyspell-correct-ivy
   :after flyspell-correct)
+
+;; Fly spell mode customizations
+;; Evil appeared to be writing over flyspell-mode-map
+(global-set-key (kbd "C-c f") 'flyspell-buffer)
+(global-set-key (kbd "C-;") 'flyspell-correct-wrapper)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;Helpful discovery and completion tools;;
@@ -289,7 +301,6 @@
   :bind
   ("C-c n d" . deft))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;Org and friends                       ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -297,6 +308,8 @@
 ;; Org Mode
 ;; Initial setup
 (use-package org
+  :hook
+  (add-hook 'org-mode-hook 'turn-on-flyspell)
   :bind
   (("C-c l" . org-store-link)
   ("C-c a" . org-agenda)
@@ -431,6 +444,10 @@
   :demand
   :config
   (slime-setup '(slime-fancy)))
+
+
+
+
 
 ;; ;---------------------------------------------------------------------
 ;; No  default.el after .emacs loads
